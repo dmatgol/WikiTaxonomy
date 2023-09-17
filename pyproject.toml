@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "wikitaxonomy"
+version = "0.1.0"
+description = ""
+authors = ["Diogo Matias <diogo.pomatias@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+black = "^23.9.1"
+mypy = "^1.5.1"
+notebook = "^7.0.3"
+pandas = "^2.1.0"
+matplotlib = "^3.7.3"
+transformers = "^4.33.1"
+pre-commit = "^3.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
