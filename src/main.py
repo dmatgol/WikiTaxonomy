@@ -46,8 +46,6 @@ def main() -> None:
         val_path=data_paths.val_path,
         test_path=data_paths.test_path,
     ).run()
-    train_df = train_df.sample(2000)
-    val_df = val_df.sample(2000)
     logging.info("Started training the model ...")
     Train(train_df=train_df, val_df=val_df, model_config=model_config, test_df=test_df).run()
 
