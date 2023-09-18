@@ -23,6 +23,9 @@ torchvision = "^0.15.2"
 nltk = "^3.8.1"
 numpy = "1.24.4"
 torchmetrics = "^1.1.2"
+pydantic = "2.1"
+pyyaml = "^6.0.1"
+types-pyyaml = "^6.0.12.11"
 
 
 [build-system]
