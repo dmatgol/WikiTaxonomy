@@ -4,6 +4,7 @@ import pickle
 import re
 
 import nltk
+import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -11,6 +12,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
 from src.settings.general import constants
+from tqdm import tqdm
 
 
 class TFIDFLogisticTextClassifier:
@@ -23,14 +25,14 @@ class TFIDFLogisticTextClassifier:
         random_state (int, optional): Seed for random state. Default is 0.
     """
 
-    def __init__(self, train_data, random_state=0):
+    def __init__(self, train_data: pd.DataFrame, tf_idf_min_df: int = 5, random_state=0):
         """Classifier using TF-IDF vectorization and Logistic Regression."""
         self.download_nltk_packages()
-        self.train_data = train_data
         self.random_state = random_state
         self.vectorizer = TfidfVectorizer(
-            sublinear_tf=True, min_df=5, ngram_range=(1, 2), stop_words="english"
+            sublinear_tf=True, min_df=tf_idf_min_df, ngram_range=(1, 2), stop_words="english"
         )
+        self.train_data = train_data
         self.logistic_regression_classifier = LogisticRegression(random_state=random_state)
 
     @staticmethod
@@ -43,7 +45,7 @@ class TFIDFLogisticTextClassifier:
     def train(self):
         """Train classifier."""
         # Create TF-IDF vectors
-        features = [self.preprocess(article) for article in self.train_data.text]
+        features = [self.preprocess(article) for article in tqdm(self.train_data.text)]
         tfidf_features = self.vectorizer.fit_transform(features).toarray()
         labels = self.train_data[constants.label_column_encoded]
 
@@ -56,16 +58,17 @@ class TFIDFLogisticTextClassifier:
 
         return self.logistic_regression_classifier
 
-    def predict(self, test_data):
+    def predict(self, test_data: pd.DataFrame):
         """Generate predictions for the test set."""
-        tfidf_test = self.vectorizer.transform(test_data)
+        features = [self.preprocess(article) for article in tqdm(test_data.text)]
+        tfidf_test = self.vectorizer.transform(features).toarray()
         y_pred = self.logistic_regression_classifier.predict(tfidf_test)
         return y_pred
 
     def evaluate(self, test_data, test_labels):
         """Evaluate the classifier's performance on test data and labels."""
-        tfidf_test = self.vectorizer.transform(test_data)
-
+        features = [self.preprocess(article) for article in tqdm(test_data.text)]
+        tfidf_test = self.vectorizer.transform(features).toarray()
         y_pred = self.logistic_regression_classifier.predict(tfidf_test)
 
         report = classification_report(test_labels, y_pred)
