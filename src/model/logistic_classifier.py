@@ -1,5 +1,4 @@
 """A text classifier using TF-IDF vectorization and Logistic Regression."""
-import os
 import pickle
 import re
 
@@ -11,8 +10,9 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
-from src.settings.general import constants
 from tqdm import tqdm
+
+from src.settings.general import constants
 
 
 class TFIDFLogisticTextClassifier:
@@ -42,7 +42,7 @@ class TFIDFLogisticTextClassifier:
         nltk.download("stopwords")
         nltk.download("wordnet")
 
-    def train(self):
+    def train(self, save_path: str):
         """Train classifier."""
         # Create TF-IDF vectors
         features = [self.preprocess(article) for article in tqdm(self.train_data.text)]
@@ -52,7 +52,7 @@ class TFIDFLogisticTextClassifier:
         # Train the Logistic Regression classifier using the tdidf features
         self.logistic_regression_classifier.fit(tfidf_features, labels)
 
-        model_path = f"{os.getcwd()}/model/best_models/logistic_model.pkl"
+        model_path = f"{save_path}/logistic_model.pkl"
         with open(model_path, "wb") as model_file:
             pickle.dump(self.logistic_regression_classifier, model_file)
 
