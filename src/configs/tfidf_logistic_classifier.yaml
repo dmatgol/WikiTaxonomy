@@ -1,0 +1,3 @@
+name: TFIDFLogisticTextClassifier
+parameters:
+  tf_idf_min_df: 5

@@ -10,12 +10,13 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 from sklearn.utils.class_weight import compute_class_weight
+from transformers import DistilBertTokenizerFast as DistilBertTokenizer
+
 from src.data.wiki_taxonomy_data_module import WikiTaxonomyDataModule
 from src.model.logistic_classifier import TFIDFLogisticTextClassifier
 from src.model.wiki_taxonomy_classifier import WikiTaxonomyClassifier
 from src.pipelines.base import Pipeline
 from src.settings.general import ModelConfig, constants
-from transformers import DistilBertTokenizerFast as DistilBertTokenizer
 
 
 class Train(Pipeline):
@@ -111,7 +112,7 @@ class Train(Pipeline):
             mode="min",
         )
         early_stopping_callback = EarlyStopping(monitor="val_loss", patience=3)
-        logger = TensorBoardLogger("lightning_logs", name="wiki-taxonomy")
+        logger = TensorBoardLogger(self.tensorboard_results, name="wiki-taxonomy")
         trainer = pl.Trainer(
             logger=logger,
             max_epochs=self.model_config.train_config["epochs"],
@@ -124,4 +125,4 @@ class Train(Pipeline):
         tfidf_logistic_classifier = TFIDFLogisticTextClassifier(
             train_data=self.train_df, tf_idf_min_df=self.model_config.parameters["tf_idf_min_df"]
         )
-        tfidf_logistic_classifier.train()
+        tfidf_logistic_classifier.train(self.tensorboard_results)

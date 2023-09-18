@@ -1,0 +1,11 @@
+name: WikiTaxonomyClassifier
+parameters:
+  scheduler: "cosine_annealing"
+  bert_model_name: "distilbert-base-cased"
+  max_token_len: 512
+train_config:
+  batch_size: 2
+  epochs: 1
+  num_workers: 0
+  lr: 1e-7
+  weight_decay: 1e-3
