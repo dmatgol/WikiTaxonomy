@@ -10,10 +10,12 @@ from pydantic import BaseModel
 class Paths(BaseModel):
     """Store data paths."""
 
-    shap_values_cache: str = f"{os.getcwd()}/model/shap_values_cache.pkl"
+    shap_values_cache: str = f"{os.getcwd()}/model/shap_values_cache"
     train_path: str = f"{os.getcwd()}/data/DBPEDIA_train.csv"
     val_path: str = f"{os.getcwd()}/data/DBPEDIA_val.csv"
     test_path: str = f"{os.getcwd()}/data/DBPEDIA_val.csv"
+    best_bert_based_model_path: str = f"{os.getcwd()}/model/best_models/best-checkpoint-v2.ckpt"
+    best_tfidf_logistic_model_path: str = f"{os.getcwd()}/model/best_models/logistic_model.pkl"
 
 
 class Constants(BaseModel):

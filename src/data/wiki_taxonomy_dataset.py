@@ -1,9 +1,10 @@
 """WikiTaxonomy dataset."""
 import pandas as pd
 import torch
-from src.settings.general import constants
 from torch.utils.data import Dataset
 from transformers import DistilBertTokenizerFast as DistilBertTokenizer
+
+from src.settings.general import constants
 
 
 class WikiTaxonomyDataset(Dataset):
@@ -43,7 +44,9 @@ class WikiTaxonomyDataset(Dataset):
 
         article_text = data_row.text
         labels = torch.zeros(self.n_classes)
-        labels[data_row[constants.label_column_encoded]] = 1
+        #  For inference in a new test set without labels, the true label is unknown
+        if constants.label_column_encoded in data_row.index:
+            labels[data_row[constants.label_column_encoded]] = 1
 
         encoding = self.tokenizer.encode_plus(
             article_text,

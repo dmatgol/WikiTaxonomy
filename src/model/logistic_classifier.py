@@ -1,18 +1,19 @@
 """A text classifier using TF-IDF vectorization and Logistic Regression."""
+import logging
 import pickle
 import re
 
 import nltk
 import pandas as pd
+import shap
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
 from tqdm import tqdm
 
-from src.settings.general import constants
+from src.settings.general import constants, data_paths
 
 
 class TFIDFLogisticTextClassifier:
@@ -54,25 +55,31 @@ class TFIDFLogisticTextClassifier:
 
         model_path = f"{save_path}/logistic_model.pkl"
         with open(model_path, "wb") as model_file:
-            pickle.dump(self.logistic_regression_classifier, model_file)
-
-        return self.logistic_regression_classifier
+            pickle.dump(self, model_file)
 
     def predict(self, test_data: pd.DataFrame):
         """Generate predictions for the test set."""
         features = [self.preprocess(article) for article in tqdm(test_data.text)]
         tfidf_test = self.vectorizer.transform(features).toarray()
-        y_pred = self.logistic_regression_classifier.predict(tfidf_test)
+        y_pred = self.logistic_regression_classifier.predict_proba(tfidf_test)
         return y_pred
 
-    def evaluate(self, test_data, test_labels):
-        """Evaluate the classifier's performance on test data and labels."""
-        features = [self.preprocess(article) for article in tqdm(test_data.text)]
-        tfidf_test = self.vectorizer.transform(features).toarray()
-        y_pred = self.logistic_regression_classifier.predict(tfidf_test)
-
-        report = classification_report(test_labels, y_pred)
-        return report
+    def compute_shap_values(self, test_data: pd.DataFrame):
+        """Compute shap values for the model."""
+        test_features = [self.preprocess(article) for article in tqdm(test_data.text)]
+        train_features = [self.preprocess(article) for article in tqdm(self.train_data.text)]
+        tfidf_train = self.vectorizer.fit_transform(train_features).toarray()
+        tfidf_test = self.vectorizer.transform(test_features).toarray()
+        explainer = shap.Explainer(
+            self.logistic_regression_classifier,
+            tfidf_train,
+            feature_names=self.vectorizer.get_feature_names_out(),
+        )
+        shap_values = explainer(tfidf_test)
+        with open(f"{data_paths.shap_values_cache}_logistic_classifier.pkl", "wb") as fp:
+            pickle.dump(shap_values, fp)
+            logging.info("dictionary saved successfully to file")
+        return shap_values
 
     def preprocess(self, document):
         """Preprocess text.

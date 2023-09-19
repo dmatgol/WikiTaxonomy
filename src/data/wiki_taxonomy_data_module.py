@@ -1,9 +1,10 @@
 """Module with functions and classes related to the WikiTaxonomy dataset."""
 import pandas as pd
 import pytorch_lightning as pl
+from torch.utils.data import DataLoader
+
 from src.data.wiki_taxonomy_dataset import WikiTaxonomyDataset
 from src.settings.general import constants
-from torch.utils.data import DataLoader
 
 
 class WikiTaxonomyDataModule(pl.LightningDataModule):
@@ -41,7 +42,7 @@ class WikiTaxonomyDataModule(pl.LightningDataModule):
         self.max_token_len = max_token_len
         label_column = constants.label_column
         label_column_encoded = constants.label_column_encoded
-        self.class_label_to_index = train_df.set_index(label_column)[label_column_encoded].to_dict()
+        self.class_label_to_index = train_df.set_index(label_column_encoded)[label_column].to_dict()
 
     def setup(self, stage=None):
         """Set up the training, validation, and test datasets."""
