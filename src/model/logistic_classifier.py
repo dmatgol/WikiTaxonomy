@@ -1,4 +1,5 @@
 """A text classifier using TF-IDF vectorization and Logistic Regression."""
+import logging
 import pickle
 import re
 
@@ -12,7 +13,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from tqdm import tqdm
 
-from src.settings.general import constants
+from src.settings.general import constants, data_paths
 
 
 class TFIDFLogisticTextClassifier:
@@ -75,6 +76,9 @@ class TFIDFLogisticTextClassifier:
             feature_names=self.vectorizer.get_feature_names_out(),
         )
         shap_values = explainer(tfidf_test)
+        with open(f"{data_paths.shap_values_cache}_logistic_classifier.pkl", "wb") as fp:
+            pickle.dump(shap_values, fp)
+            logging.info("dictionary saved successfully to file")
         return shap_values
 
     def preprocess(self, document):

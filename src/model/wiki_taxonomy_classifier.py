@@ -265,14 +265,12 @@ class WikiTaxonomyClassifier(pl.LightningModule):
     def compute_shap_values_batch(self, test_batch, class_names: list):
         """Compute shap values per batch of article inputs."""
         shap_value_batch_list = []
-        for i, batch in tqdm(enumerate(test_batch)):
+        for _, batch in tqdm(enumerate(test_batch)):
             explainer = shap.Explainer(
                 self.compute_output_for_shap_values, self.tokenizer, output_names=class_names
             )
             shap_values = explainer(batch["article_text"])
             shap_value_batch_list.append(shap_values)
-            if i == 2:
-                break
 
         token_shap_value_dict = get_mean_shap_value_per_token(shap_value_batch_list, class_names)
         with open(f"{data_paths.shap_values_cache}_bert_classifier.pkl", "wb") as fp:

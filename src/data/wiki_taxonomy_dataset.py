@@ -27,8 +27,6 @@ class WikiTaxonomyDataset(Dataset):
             input text. Defaults to 128.
             class_label_to_index (dict, optional): A dictionary mapping class
             labels to their indices.
-            inference_mode (bool, optional): Indicate inference mode. On inference mode, the true
-            labels are unknown.
         """
         self.tokenizer = tokenizer
         self.data = data
