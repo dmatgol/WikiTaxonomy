@@ -2,6 +2,7 @@
 import argparse
 import logging
 
+from pipelines.inference import Inference
 from pipelines.preprocessing import PreProcessing
 from pipelines.train import Train
 from settings.general import ModelConfig, data_paths
@@ -21,6 +22,12 @@ def parse_cli_args() -> argparse.Namespace:
         choices=["bert_classifier", "tfidf_logistic_classifier"],
         help="Select the model to use. Choices: bert_classifier or tfidf_logistic_classifier",
         default="bert_classifier",
+    )
+    parser.add_argument(
+        "--run_mode",
+        choices=["train", "inference"],
+        help="Select the mode to use the model. Choices: train or inference",
+        default="inference",
     )
     args = parser.parse_args()
 
@@ -46,8 +53,12 @@ def main() -> None:
         val_path=data_paths.val_path,
         test_path=data_paths.test_path,
     ).run()
-    logging.info("Started training the model ...")
-    Train(train_df=train_df, val_df=val_df, model_config=model_config, test_df=test_df).run()
+    if args.run_mode == "train":
+        logging.info("Started training the model ...")
+        Train(train_df=train_df, val_df=val_df, model_config=model_config, test_df=test_df).run()
+    else:
+        logging.info("Started inference mode ...")
+        Inference(train_df=train_df, test_df=test_df, model_config=model_config).run()
 
 
 if __name__ == "__main__":

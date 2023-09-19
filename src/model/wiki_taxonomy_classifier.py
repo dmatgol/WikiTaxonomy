@@ -10,13 +10,15 @@ import pytorch_lightning as pl
 import shap
 import torch
 import torch.nn as nn
-from src.settings.general import data_paths
-from src.utils.utils import get_mean_shap_value_per_token
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torchmetrics.classification import BinaryAUROC
+from tqdm import tqdm
 from transformers import DistilBertModel
 from transformers import DistilBertTokenizerFast as DistilBertTokenizer
 from transformers import get_linear_schedule_with_warmup
+
+from src.settings.general import DEVICE, data_paths
+from src.utils.utils import get_mean_shap_value_per_token
 
 
 class WikiTaxonomyClassifier(pl.LightningModule):
@@ -49,8 +51,8 @@ class WikiTaxonomyClassifier(pl.LightningModule):
         super().__init__()
         # Model specific arguments
         self.tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-cased")
-        self.distilbert = DistilBertModel.from_pretrained("distilbert-base-cased", return_dict=True)
-        self.classifier = nn.Linear(self.distilbert.config.hidden_size, n_classes)
+        self.bert = DistilBertModel.from_pretrained("distilbert-base-cased", return_dict=True)
+        self.classifier = nn.Linear(self.bert.config.hidden_size, n_classes)
 
         # scheduler/optimizer related parameter
         self.n_training_steps = n_training_steps
@@ -72,7 +74,7 @@ class WikiTaxonomyClassifier(pl.LightningModule):
 
     def forward(self, input_ids, attention_mask, labels=None):
         """Forward pass of the model."""
-        output = self.distilbert(input_ids, attention_mask=attention_mask)
+        output = self.bert(input_ids, attention_mask=attention_mask)
         pooled_output = torch.mean(output.last_hidden_state, dim=1)
         output = self.classifier(pooled_output)
         output = torch.sigmoid(output)
@@ -227,25 +229,22 @@ class WikiTaxonomyClassifier(pl.LightningModule):
 
         predictions = []
         labels = []
-        for test_batch in new_batch:
+        for test_batch in tqdm(new_batch):
 
             with torch.no_grad():
-                _, outputs = self.to("cpu")(test_batch["input_ids"], test_batch["attention_mask"])
+                _, outputs = self.to(DEVICE)(
+                    test_batch["input_ids"].to(DEVICE), test_batch["attention_mask"].to(DEVICE)
+                )
 
-            predicted_class_index = torch.argmax(outputs, dim=1)
-            predictions.append(predicted_class_index)
-            labels.append(torch.argmax(test_batch["label"], dim=1).int())
+            predictions.append(outputs)
+            labels.append(test_batch["label"].int())
 
-        predictions_idx = predictions.reshape(-1).detach().cpu()
-        class_label_to_index = self.trainer.datamodule.class_label_to_index
-        predictions_classes = list(map(class_label_to_index, predictions_idx))
-        return predictions, predictions_classes
+        predictions = torch.cat(predictions, dim=0)
+        labels = torch.cat(labels, dim=0)
+        return predictions, labels
 
     def compute_output_for_shap_values(self, text):
         """Calculate model interpretability with SHAP values."""
-        self.eval()
-        self.freeze()
-
         tv = torch.tensor(
             [
                 self.tokenizer.encode(word, padding="max_length", max_length=512, truncation=True)
@@ -254,22 +253,29 @@ class WikiTaxonomyClassifier(pl.LightningModule):
         )
         attention_mask = (tv != 0).type(torch.int64)
         with torch.no_grad():
-            outputs = self.to("cpu")(tv, attention_mask=attention_mask)[1].detach().cpu().numpy()
+            outputs = (
+                self.to(DEVICE)(tv.to(DEVICE), attention_mask=attention_mask.to(DEVICE))[1]
+                .detach()
+                .cpu()
+                .numpy()
+            )
 
         return outputs
 
     def compute_shap_values_batch(self, test_batch, class_names: list):
         """Compute shap values per batch of article inputs."""
         shap_value_batch_list = []
-        for batch in test_batch:
+        for i, batch in tqdm(enumerate(test_batch)):
             explainer = shap.Explainer(
                 self.compute_output_for_shap_values, self.tokenizer, output_names=class_names
             )
             shap_values = explainer(batch["article_text"])
             shap_value_batch_list.append(shap_values)
+            if i == 2:
+                break
 
-        token_shap_value_dict = get_mean_shap_value_per_token(shap_value_batch_list, self.n_classes)
-        with open(data_paths.shap_values_cache, "wb") as fp:
+        token_shap_value_dict = get_mean_shap_value_per_token(shap_value_batch_list, class_names)
+        with open(f"{data_paths.shap_values_cache}_bert_classifier.pkl", "wb") as fp:
             pickle.dump(token_shap_value_dict, fp)
             print("dictionary saved successfully to file")
         return token_shap_value_dict
