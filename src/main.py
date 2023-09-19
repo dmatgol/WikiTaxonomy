@@ -2,6 +2,7 @@
 import argparse
 import logging
 
+from pipelines.evaluate import Evaluate
 from pipelines.inference import Inference
 from pipelines.preprocessing import PreProcessing
 from pipelines.train import Train
@@ -48,7 +49,7 @@ def main() -> None:
     else:
         model_config = read_model_config("configs/tfidf_logistic_classifier.yaml")
     logging.info("Started PreProcessing Step...")
-    train_df, val_df, test_df = PreProcessing(
+    train_df, val_df, test_df, class_label_to_index = PreProcessing(
         train_path=data_paths.train_path,
         val_path=data_paths.val_path,
         test_path=data_paths.test_path,
@@ -58,7 +59,23 @@ def main() -> None:
         Train(train_df=train_df, val_df=val_df, model_config=model_config, test_df=test_df).run()
     else:
         logging.info("Started inference mode ...")
-        Inference(train_df=train_df, test_df=test_df, model_config=model_config).run()
+        Inference(
+            class_label_to_index=class_label_to_index, test_df=test_df, model_config=model_config
+        ).run()
+        if args.model == "bert_classifier":
+            Evaluate(
+                cached_predictions_path=data_paths.bert_based_model_cached_predictions_path,
+                cached_labels_path=data_paths.bert_based_model_cached_labels_path,
+                cached_shap_values_path=data_paths.bert_based_model_cached_shap_path,
+                class_label_to_index=class_label_to_index,
+            ).run()
+        else:
+            Evaluate(
+                cached_predictions_path=data_paths.tfidf_logistic_model_cached_predictions_path,
+                cached_labels_path=data_paths.bert_based_model_cached_labels_path,
+                cached_shap_values_path=data_paths.tfidf_logistic_model_cached_shap_path,
+                class_label_to_index=class_label_to_index,
+            ).run()
 
 
 if __name__ == "__main__":

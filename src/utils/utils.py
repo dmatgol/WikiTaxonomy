@@ -1,5 +1,22 @@
 """Function to get shap values calculated over batches."""
+import logging
+import pickle
+
 import numpy as np
+
+
+def save_results(result_to_save, path_to_save):
+    """Save results to a given location."""
+    with open(path_to_save, "wb") as fp:
+        pickle.dump(result_to_save, fp)
+        logging.info("dictionary saved successfully to file")
+
+
+def load_pickle(file_path: str):
+    """Load a pickle file."""
+    with open(file_path, "rb") as model_file:
+        file = pickle.load(model_file)
+    return file
 
 
 def get_mean_shap_value_per_token(

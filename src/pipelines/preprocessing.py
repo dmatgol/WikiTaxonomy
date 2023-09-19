@@ -1,6 +1,7 @@
 """Preprocessing pipeline stage."""
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+
 from src.pipelines.base import Pipeline
 from src.settings.general import constants
 
@@ -20,7 +21,7 @@ class PreProcessing(Pipeline):
         self.train_df = pd.read_csv(val_path)
         self.train_df = pd.read_csv(test_path)
 
-    def run(self) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    def run(self) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict[int, str]]:
         """Run the preprocessing pipeline.
 
         Includes label encoding for train, validation, and test datasets.
@@ -30,7 +31,11 @@ class PreProcessing(Pipeline):
         val_df = self.apply_label_encoder(encoder, self.train_df)
         test_df = self.apply_label_encoder(encoder, self.train_df)
 
-        return train_df, val_df, test_df
+        label_column = constants.label_column
+        label_column_encoded = constants.label_column_encoded
+        class_label_to_index = train_df.set_index(label_column_encoded)[label_column].to_dict()
+
+        return train_df, val_df, test_df, class_label_to_index
 
     @staticmethod
     def encode_label(df: pd.DataFrame) -> LabelEncoder:
