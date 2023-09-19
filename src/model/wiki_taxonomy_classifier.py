@@ -1,6 +1,4 @@
 """Taxonomy Classifier based on Distilbert with a classification head."""
-import os
-import pickle
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -18,7 +16,7 @@ from transformers import DistilBertTokenizerFast as DistilBertTokenizer
 from transformers import get_linear_schedule_with_warmup
 
 from src.settings.general import DEVICE, data_paths
-from src.utils.utils import get_mean_shap_value_per_token
+from src.utils.utils import get_mean_shap_value_per_token, save_results
 
 
 class WikiTaxonomyClassifier(pl.LightningModule):
@@ -196,7 +194,7 @@ class WikiTaxonomyClassifier(pl.LightningModule):
             lr_scheduler=dict(scheduler=scheduler, interval="step"),  # noqa: C408
         )
 
-    def predict_text(self, new_article: str):
+    def predict_text(self, new_article: str, class_label_to_index: dict[int, str]):
         """Predict the class label for a single article input."""
         self.eval()
         self.freeze()
@@ -219,7 +217,7 @@ class WikiTaxonomyClassifier(pl.LightningModule):
             _, outputs = self.to("cpu")(input_ids, attention_mask)
 
         predicted_class_index = torch.argmax(outputs, dim=1).item()
-        predicted_class = self.trainer.datamodule.class_label_to_index[predicted_class_index]
+        predicted_class = class_label_to_index[predicted_class_index]
         return predicted_class_index, predicted_class
 
     def predict_batch_text(self, new_batch=None):
@@ -229,6 +227,7 @@ class WikiTaxonomyClassifier(pl.LightningModule):
 
         predictions = []
         labels = []
+        texts = []
         for test_batch in tqdm(new_batch):
 
             with torch.no_grad():
@@ -238,9 +237,19 @@ class WikiTaxonomyClassifier(pl.LightningModule):
 
             predictions.append(outputs)
             labels.append(test_batch["label"].int())
+            texts.append(test_batch["article_text"])
 
         predictions = torch.cat(predictions, dim=0)
         labels = torch.cat(labels, dim=0)
+        texts = [text for text_batches in texts for text in text_batches]
+
+        for result, result_path in [
+            (predictions, data_paths.bert_based_model_cached_predictions_path),
+            (labels, data_paths.bert_based_model_cached_labels_path),
+            (texts, data_paths.bert_based_model_cached_test_set),
+        ]:
+            save_results(result, result_path)
+
         return predictions, labels
 
     def compute_output_for_shap_values(self, text):
@@ -273,23 +282,16 @@ class WikiTaxonomyClassifier(pl.LightningModule):
             shap_value_batch_list.append(shap_values)
 
         token_shap_value_dict = get_mean_shap_value_per_token(shap_value_batch_list, class_names)
-        with open(f"{data_paths.shap_values_cache}_bert_classifier.pkl", "wb") as fp:
-            pickle.dump(token_shap_value_dict, fp)
-            print("dictionary saved successfully to file")
+
+        save_results(token_shap_value_dict, data_paths.bert_shap_values_cache)
         return token_shap_value_dict
 
-    def plot_shap_values(self, test_batch, class_label: str, class_names: list):
+    @staticmethod
+    def plot_shap_values(token_shap_value_dict: dict, class_label: str):
         """Plot most important features for a given class label."""
-        if not os.path.exists(data_paths.shap_values_cache):
-            # if it doesn't exist compute and write it
-            _ = self.compute_shap_values_batch(test_batch, class_names)
-
-        with open(data_paths.shap_values_cache, "rb") as fp:
-            token_shap_value_dict = pickle.load(fp)
-
         df = pd.DataFrame.from_dict(token_shap_value_dict, orient="index").reset_index()
         df.columns = ["word"] + list(df.columns[1:])
-
+        print(df.head())
         top_k_values = df[df[class_label] > 0].nlargest(10, class_label).index
 
         # PLOT

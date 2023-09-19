@@ -1,5 +1,4 @@
 """A text classifier using TF-IDF vectorization and Logistic Regression."""
-import logging
 import pickle
 import re
 
@@ -14,6 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from tqdm import tqdm
 
 from src.settings.general import constants, data_paths
+from src.utils.utils import save_results
 
 
 class TFIDFLogisticTextClassifier:
@@ -62,23 +62,32 @@ class TFIDFLogisticTextClassifier:
         features = [self.preprocess(article) for article in tqdm(test_data.text)]
         tfidf_test = self.vectorizer.transform(features).toarray()
         y_pred = self.logistic_regression_classifier.predict_proba(tfidf_test)
+        labels = test_data[constants.label_column_encoded]
+        texts = test_data["text"]
+        for result, result_path in [
+            (y_pred, data_paths.tfidf_logistic_model_cached_predictions_path),
+            (labels, data_paths.tfidf_logistic_model_cached_labels_path),
+            (texts, data_paths.tfidf_logistic_model_cached_test_set),
+        ]:
+            save_results(result, result_path)
+
         return y_pred
 
     def compute_shap_values(self, test_data: pd.DataFrame):
         """Compute shap values for the model."""
         test_features = [self.preprocess(article) for article in tqdm(test_data.text)]
         train_features = [self.preprocess(article) for article in tqdm(self.train_data.text)]
+        labels = list(self.train_data[constants.label_column].unique())
         tfidf_train = self.vectorizer.fit_transform(train_features).toarray()
         tfidf_test = self.vectorizer.transform(test_features).toarray()
         explainer = shap.Explainer(
             self.logistic_regression_classifier,
             tfidf_train,
             feature_names=self.vectorizer.get_feature_names_out(),
+            output_names=labels,
         )
         shap_values = explainer(tfidf_test)
-        with open(f"{data_paths.shap_values_cache}_logistic_classifier.pkl", "wb") as fp:
-            pickle.dump(shap_values, fp)
-            logging.info("dictionary saved successfully to file")
+        save_results(shap_values, data_paths.tfidf_logistic_model_cached_shap_path)
         return shap_values
 
     def preprocess(self, document):

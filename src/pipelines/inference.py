@@ -1,6 +1,7 @@
 """Inference pipeline stage."""
 import pickle
 
+import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
@@ -23,14 +24,12 @@ class Inference(Pipeline):
     """
 
     def __init__(
-        self, train_df: pd.DataFrame, test_df: pd.DataFrame, model_config: ModelConfig
+        self, class_label_to_index: dict[int, str], test_df: pd.DataFrame, model_config: ModelConfig
     ) -> None:
         """Initialize the Inference pipeline class."""
         self.test_df = test_df
         self.model_config = model_config
-        label_column = constants.label_column
-        label_column_encoded = constants.label_column_encoded
-        self.class_label_to_index = train_df.set_index(label_column_encoded)[label_column].to_dict()
+        self.class_label_to_index = class_label_to_index
 
     def run(self):
         """Run the inference pipeline."""
@@ -47,7 +46,7 @@ class Inference(Pipeline):
         else:
             raise ValueError("Model not defined...")
 
-        predicted_label = self.get_predicted_label(predictions_logits)
+        predicted_label = self.get_label_class(predictions_logits)
         return predictions_logits, labels, predicted_label, model_interpretability
 
     def generate_predictions_wiki_taxonomy_classifier(self):
@@ -72,13 +71,13 @@ class Inference(Pipeline):
         )
         return test_dataloader
 
-    def get_predicted_label(self, predictions_logits: torch.tensor):
+    def get_label_class(self, logits):
         """Get predicted labels from predicted indexes."""
-        predicted_class_indexes = torch.argmax(predictions_logits, dim=1)
-        predictions_classes = [
-            self.class_label_to_index[prediction.item()] for prediction in predicted_class_indexes
-        ]
-        return predictions_classes
+        if isinstance(logits, torch.Tensor):
+            logits = logits.numpy()
+        class_indexes = np.argmax(logits, axis=1)
+        classes = [self.class_label_to_index[label] for label in class_indexes]
+        return classes
 
     def compute_model_interpretability(self, model_name: str):
         """Compute model interpretability using shap values."""
@@ -89,7 +88,7 @@ class Inference(Pipeline):
             )
             test_dataloader = self._setup_test_dataloader(trained_model)
             token_shap_value_dict = trained_model.compute_shap_values_batch(
-                test_batch=test_dataloader, class_names=list(self.class_label_to_index.keys())
+                test_batch=test_dataloader, class_names=list(self.class_label_to_index.values())
             )
             return token_shap_value_dict
         elif model_name == TFIDFLogisticTextClassifier.__name__:
