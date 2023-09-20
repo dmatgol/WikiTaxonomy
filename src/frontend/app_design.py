@@ -29,12 +29,6 @@ def app_design():
         """
     st.write(instructions)
 
-    # train_df, val_df, test_df, class_label_to_index = PreProcessing(
-    #     train_path=data_paths.train_path,
-    #     val_path=data_paths.val_path,
-    #     test_path=data_paths.test_path,
-    # ).run()
-
     if sentence_test_set == "Sentence":
         user_input = st.text_input("Enter some text:")
         sentence_prediction_design(user_input)
