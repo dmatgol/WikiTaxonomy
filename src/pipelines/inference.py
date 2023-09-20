@@ -1,7 +1,6 @@
 """Inference pipeline stage."""
 import pickle
 
-import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
@@ -70,14 +69,6 @@ class Inference(Pipeline):
             test_data_class, batch_size=self.model_config.train_config["batch_size"]
         )
         return test_dataloader
-
-    def get_label_class(self, logits):
-        """Get predicted labels from predicted indexes."""
-        if isinstance(logits, torch.Tensor):
-            logits = logits.numpy()
-        class_indexes = np.argmax(logits, axis=1)
-        classes = [self.class_label_to_index[label] for label in class_indexes]
-        return classes
 
     def compute_model_interpretability(self, model_name: str):
         """Compute model interpretability using shap values."""

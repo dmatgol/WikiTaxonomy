@@ -1,5 +1,8 @@
-<div align="center">
-<img src="./app_demo.gif" width="500px"/><br/>
+<div align="center"> </div>
+<video width="320" height="240" controls>
+  <source src="./src/static_images/streamlit_demo.mp4" type="video/mp4">
+</video>
+
 
 #  Wiki Taxonomy Classifier
 
