@@ -10,6 +10,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
 from src.settings.general import constants, data_paths
@@ -33,8 +34,11 @@ class TFIDFLogisticTextClassifier:
         self.vectorizer = TfidfVectorizer(
             sublinear_tf=True, min_df=tf_idf_min_df, ngram_range=(1, 2), stop_words="english"
         )
+        self.scaler = StandardScaler()
         self.train_data = train_data
-        self.logistic_regression_classifier = LogisticRegression(random_state=random_state)
+        self.logistic_regression_classifier = LogisticRegression(
+            random_state=random_state, max_iter=400
+        )
 
     @staticmethod
     def download_nltk_packages():
@@ -48,10 +52,12 @@ class TFIDFLogisticTextClassifier:
         # Create TF-IDF vectors
         features = [self.preprocess(article) for article in tqdm(self.train_data.text)]
         tfidf_features = self.vectorizer.fit_transform(features).toarray()
+        self.scaler.fit(tfidf_features)
+        scaled_features = self.scaler.transform(tfidf_features)
         labels = self.train_data[constants.label_column_encoded]
 
         # Train the Logistic Regression classifier using the tdidf features
-        self.logistic_regression_classifier.fit(tfidf_features, labels)
+        self.logistic_regression_classifier.fit(scaled_features, labels)
 
         model_path = f"{save_path}/logistic_model.pkl"
         with open(model_path, "wb") as model_file:
@@ -61,13 +67,12 @@ class TFIDFLogisticTextClassifier:
         """Generate predictions for the test set."""
         features = [self.preprocess(article) for article in tqdm(test_data.text)]
         tfidf_test = self.vectorizer.transform(features).toarray()
-        y_pred = self.logistic_regression_classifier.predict_proba(tfidf_test)
-        labels = test_data[constants.label_column_encoded]
+        scaled_features = self.scaler.transform(tfidf_test)
+        y_pred = self.logistic_regression_classifier.predict_proba(scaled_features)
         texts = test_data["text"]
         for result, result_path in [
             (y_pred, data_paths.tfidf_logistic_model_cached_predictions_path),
-            (labels, data_paths.tfidf_logistic_model_cached_labels_path),
-            (texts, data_paths.tfidf_logistic_model_cached_test_set),
+            (texts, data_paths.cached_test_set),
         ]:
             save_results(result, result_path)
 

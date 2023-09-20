@@ -117,6 +117,7 @@ class Train(Pipeline):
             logger=logger,
             max_epochs=self.model_config.train_config["epochs"],
             callbacks=[checkpoint_callback, early_stopping_callback],
+            gradient_clip_val=0.9,
         )
         trainer.fit(model, wiki_data_module)
 

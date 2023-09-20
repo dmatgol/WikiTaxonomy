@@ -3,6 +3,7 @@ import logging
 import pickle
 
 import numpy as np
+import torch
 
 
 def save_results(result_to_save, path_to_save):
@@ -12,10 +13,13 @@ def save_results(result_to_save, path_to_save):
         logging.info("dictionary saved successfully to file")
 
 
-def load_pickle(file_path: str):
-    """Load a pickle file."""
-    with open(file_path, "rb") as model_file:
-        file = pickle.load(model_file)
+def load_results(file_path: str):
+    """Load a pickle or torch tensor file."""
+    if file_path.endswith(".pt"):
+        file = torch.load(file_path)
+    else:
+        with open(file_path, "rb") as model_file:
+            file = pickle.load(model_file)
     return file
 
 

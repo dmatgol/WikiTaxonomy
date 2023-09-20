@@ -18,8 +18,8 @@ class PreProcessing(Pipeline):
     def __init__(self, train_path: str, val_path: str, test_path: str) -> None:
         """Initialize the PreProcessing class."""
         self.train_df = pd.read_csv(train_path)
-        self.train_df = pd.read_csv(val_path)
-        self.train_df = pd.read_csv(test_path)
+        self.val_df = pd.read_csv(val_path)
+        self.test_df = pd.read_csv(test_path)
 
     def run(self) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict[int, str]]:
         """Run the preprocessing pipeline.
@@ -28,8 +28,8 @@ class PreProcessing(Pipeline):
         """
         encoder = self.encode_label(self.train_df)
         train_df = self.apply_label_encoder(encoder, self.train_df)
-        val_df = self.apply_label_encoder(encoder, self.train_df)
-        test_df = self.apply_label_encoder(encoder, self.train_df)
+        val_df = self.apply_label_encoder(encoder, self.val_df)
+        test_df = self.apply_label_encoder(encoder, self.test_df)
 
         label_column = constants.label_column
         label_column_encoded = constants.label_column_encoded
