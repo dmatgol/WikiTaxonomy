@@ -10,39 +10,33 @@ from pydantic import BaseModel
 class Paths(BaseModel):
     """Store data paths."""
 
-    bert_shap_values_cache: str = (
-        f"{os.getcwd()}/model/cached_results/shap_values_cache_bert_classifier.pkl"
-    )
+    # Dataset path
     train_path: str = f"{os.getcwd()}/data/DBPEDIA_train.csv"
     val_path: str = f"{os.getcwd()}/data/DBPEDIA_val.csv"
-    test_path: str = f"{os.getcwd()}/data/DBPEDIA_val.csv"
-    best_bert_based_model_path: str = f"{os.getcwd()}/model/best_models/best-checkpoint-v2.ckpt"
+    test_path: str = f"{os.getcwd()}/data/DBPEDIA_test.csv"
+
+    # best models
+    best_bert_based_model_path: str = f"{os.getcwd()}/model/best_models/bert_best_model.ckpt"
     best_tfidf_logistic_model_path: str = f"{os.getcwd()}/model/best_models/logistic_model.pkl"
+
     # cached results bert based model
     bert_based_model_cached_predictions_path: str = (
-        f"{os.getcwd()}/model/cached_results/predictions_first_version.pkl"
-    )
-    bert_based_model_cached_labels_path: str = (
-        f"{os.getcwd()}/model/cached_results/labels_first_version.pkl"
+        f"{os.getcwd()}/model/cached_results/predictions_tensor.pt"
     )
     bert_based_model_cached_shap_path: str = (
         f"{os.getcwd()}/model/cached_results/shap_values_cache_bert_classifier.pkl"
     )
-    bert_based_model_cached_test_set: str = (
-        f"{os.getcwd()}/model/cached_results/bert_based_text.pkl"
-    )
+
+    # Test Set
+    cached_labels_path: str = f"{os.getcwd()}/model/cached_results/labels_tensor.pt"
+    cached_test_set: str = f"{os.getcwd()}/model/cached_results/text.pkl"
+
     # cached results logistic regressor model
     tfidf_logistic_model_cached_predictions_path: str = (
         f"{os.getcwd()}/model/cached_results/logistic_predictions.pkl"
     )
-    tfidf_logistic_model_cached_labels_path: str = (
-        f"{os.getcwd()}/model/cached_results/logistic_labels.pkl"
-    )
     tfidf_logistic_model_cached_shap_path: str = (
         f"{os.getcwd()}/model/cached_results/logistic_shap_values.pkl"
-    )
-    tfidf_logistic_model_cached_test_set: str = (
-        f"{os.getcwd()}/model/cached_results/logistic_text.pkl"
     )
 
 

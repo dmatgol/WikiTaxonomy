@@ -8,7 +8,7 @@ from sklearn.metrics import classification_report
 from torchmetrics import AUROC
 
 from src.pipelines.base import Pipeline
-from src.utils.utils import load_pickle
+from src.utils.utils import load_results
 
 
 class Evaluate(Pipeline):
@@ -31,9 +31,9 @@ class Evaluate(Pipeline):
         classification_threshold: float = 0.5,
     ) -> None:
         """Initialize the evaluation class."""
-        self.cached_predictions = load_pickle(cached_predictions_path)
-        self.cached_labels = load_pickle(cached_labels_path)
-        self.cached_shap_values = load_pickle(cached_shap_values_path)
+        self.cached_predictions = load_results(cached_predictions_path)
+        self.cached_labels = load_results(cached_labels_path)
+        self.cached_shap_values = load_results(cached_shap_values_path)
         self.class_label_to_index = class_label_to_index
         self.classification_threshold = classification_threshold
 
