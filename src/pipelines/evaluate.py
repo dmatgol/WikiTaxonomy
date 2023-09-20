@@ -48,24 +48,25 @@ class Evaluate(Pipeline):
 
     def evaluate(self, predictions, labels) -> pd.DataFrame:
         """Evaluate the performance of the model predictions on F1 score and AUROC."""
-        category_auroc = self.calculate_auroc(predictions, labels)
+        category_auroc = self.calculate_auroc(predictions, labels, self.class_label_to_index)
         class_report = self.calculate_classification_report(
-            predictions, labels, self.classification_threshold
+            predictions, labels, self.class_label_to_index, self.classification_threshold
         )
 
         return category_auroc, class_report
 
-    def calculate_auroc(self, predictions, labels):
+    @staticmethod
+    def calculate_auroc(predictions, labels, class_label_to_index):
         """Calculate AUROC for a set of predictions and corresponding labels."""
         logging.info("AUROC per tag")
         category_auroc = {}
         if isinstance(predictions, np.ndarray):
             predictions = torch.tensor(predictions)
 
-        for label_idx, label in self.class_label_to_index.items():
+        for label_idx, label in class_label_to_index.items():
             auroc = AUROC(task="binary")
             tag_auroc = auroc(predictions[:, label_idx], labels[:, label_idx])
-            category_auroc[label] = tag_auroc
+            category_auroc[label] = tag_auroc.item()
             logging.info(f"{label}: {tag_auroc}")
 
         category_auroc_df = pd.DataFrame(
@@ -73,8 +74,12 @@ class Evaluate(Pipeline):
         )
         return category_auroc_df
 
+    @staticmethod
     def calculate_classification_report(
-        self, predictions, labels, classification_threshold: float = 0.5
+        predictions,
+        labels,
+        class_label_to_index,
+        classification_threshold: float = 0.5,
     ):
         """Compute the classification report for a set of predictions and corresponding labels."""
         y_pred = predictions
@@ -89,7 +94,7 @@ class Evaluate(Pipeline):
         class_report = classification_report(
             y_true,
             y_pred,
-            target_names=self.class_label_to_index.values(),
+            target_names=class_label_to_index.values(),
             zero_division=0,
             output_dict=True,
         )
