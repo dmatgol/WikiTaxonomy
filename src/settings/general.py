@@ -16,27 +16,27 @@ class Paths(BaseModel):
     test_path: str = f"{os.getcwd()}/data/DBPEDIA_test.csv"
 
     # best models
-    best_bert_based_model_path: str = f"{os.getcwd()}/model/best_models/bert_best_model.ckpt"
-    best_tfidf_logistic_model_path: str = f"{os.getcwd()}/model/best_models/logistic_model.pkl"
+    best_bert_based_model_path: str = f"{os.getcwd()}/src/model/best_models/bert_best_model.ckpt"
+    best_tfidf_logistic_model_path: str = f"{os.getcwd()}/src/model/best_models/logistic_model.pkl"
 
     # cached results bert based model
     bert_based_model_cached_predictions_path: str = (
-        f"{os.getcwd()}/model/cached_results/predictions_tensor.pt"
+        f"{os.getcwd()}/src/model/cached_results/predictions_tensor.pt"
     )
     bert_based_model_cached_shap_path: str = (
-        f"{os.getcwd()}/model/cached_results/shap_values_cache_bert_classifier.pkl"
+        f"{os.getcwd()}/src/model/cached_results/shap_values_cache_bert_classifier.pkl"
     )
 
     # Test Set
-    cached_labels_path: str = f"{os.getcwd()}/model/cached_results/labels_tensor.pt"
-    cached_test_set: str = f"{os.getcwd()}/model/cached_results/text.pkl"
+    cached_labels_path: str = f"{os.getcwd()}/src/model/cached_results/labels_tensor.pt"
+    cached_test_set: str = f"{os.getcwd()}/src/model/cached_results/text.pkl"
 
     # cached results logistic regressor model
     tfidf_logistic_model_cached_predictions_path: str = (
-        f"{os.getcwd()}/model/cached_results/logistic_predictions.pkl"
+        f"{os.getcwd()}/src/model/cached_results/logistic_predictions.pkl"
     )
     tfidf_logistic_model_cached_shap_path: str = (
-        f"{os.getcwd()}/model/cached_results/logistic_shap_values.pkl"
+        f"{os.getcwd()}/src/model/cached_results/logistic_shap_values.pkl"
     )
 
 

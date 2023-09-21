@@ -4,11 +4,11 @@ import pandas as pd
 import torch
 from fastapi import APIRouter
 
-from src.api.api_models import ClassifierModel
-from src.api.preprocess import class_label_to_index, test_df
-from src.pipelines.evaluate import Evaluate
-from src.settings.general import data_paths
-from src.utils.utils import load_results
+from api.api_models import ClassifierModel
+from api.preprocess import class_label_to_index, test_df
+from pipelines.evaluate import Evaluate
+from settings.general import data_paths
+from utils.utils import load_results
 
 router = APIRouter()
 

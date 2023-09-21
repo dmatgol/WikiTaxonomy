@@ -7,8 +7,8 @@ import torch
 from sklearn.metrics import classification_report
 from torchmetrics import AUROC
 
-from src.pipelines.base import Pipeline
-from src.utils.utils import load_results
+from pipelines.base import Pipeline
+from utils.utils import load_results
 
 
 class Evaluate(Pipeline):
@@ -76,10 +76,7 @@ class Evaluate(Pipeline):
 
     @staticmethod
     def calculate_classification_report(
-        predictions,
-        labels,
-        class_label_to_index,
-        classification_threshold: float = 0.5,
+        predictions, labels, class_label_to_index, classification_threshold: float = 0.5
     ):
         """Compute the classification report for a set of predictions and corresponding labels."""
         y_pred = predictions

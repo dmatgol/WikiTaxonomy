@@ -4,8 +4,8 @@ import socket
 import uvicorn
 from fastapi import FastAPI
 
-from src.api import cache_results_router, inference_router
-from src.api.api_models import APIState
+from api import cache_results_router, inference_router
+from api.api_models import APIState
 
 app = FastAPI(
     title="Wikipedia Taxonomy Classification",

@@ -1,16 +1,14 @@
 """Streamlit frontend design application."""
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
-import shap.plots
 import streamlit as st
 
-from src.model.wiki_taxonomy_classifier import WikiTaxonomyClassifier
-from src.settings.general import data_paths
-from src.utils.utils import load_results
+from model.wiki_taxonomy_classifier import WikiTaxonomyClassifier
+from settings.general import data_paths
+from utils.utils import load_results
 
-backend = "http://localhost:8001/"
+backend = "http://wiki_taxonomy_classifier_api:8001/"
 
 
 def app_design():
@@ -97,7 +95,7 @@ def get_test_df():
 @st.cache_data
 def get_cached_predictions(model_name: str):
     """Get chached predictions for a given model name."""
-    url = backend + "cache/cached_predictions/"
+    url = backend + "cache/predictions/"
     data = {"model_name": model_name}
     response = requests.post(url=url, params=data, timeout=8000)
     test_df_json = response.json()
@@ -140,23 +138,11 @@ def model_interpretability_design():
     """Define the design of the model interpretability section."""
     test_classes = get_test_classes()
     class_label = st.selectbox("Class to Explain predictions", test_classes)
-    col1, col2 = st.columns(2, gap="large")
-    with col1:
-        col1.subheader("**Bert pre-trained model with a classification head**")
-        shap_values_cache = data_paths.bert_based_model_cached_shap_path
-        shap_values = load_results(shap_values_cache)
-        shap_plt = WikiTaxonomyClassifier.plot_shap_values(shap_values, class_label)
-        st.pyplot(shap_plt)
-
-    with col2:
-        col2.subheader("**TD-IDF Logistic regression classifier**")
-        shap_values_cache = data_paths.tfidf_logistic_model_cached_shap_path
-        shap_values = load_results(shap_values_cache)
-        fig, ax = plt.subplots()
-        class_label_to_index = get_class_label_to_index()
-        reversed_dict = {v: k for k, v in class_label_to_index.items()}
-        shap.plots.bar(shap_values[:, :, int(reversed_dict[class_label])], show=False)
-        st.pyplot(fig)
+    st.write("**Bert pre-trained model with a classification head**")
+    shap_values_cache = data_paths.bert_based_model_cached_shap_path
+    shap_values = load_results(shap_values_cache)
+    shap_plt = WikiTaxonomyClassifier.plot_shap_values(shap_values, class_label)
+    st.pyplot(shap_plt)
 
 
 @st.cache_data

@@ -15,8 +15,8 @@ from transformers import DistilBertModel
 from transformers import DistilBertTokenizerFast as DistilBertTokenizer
 from transformers import get_linear_schedule_with_warmup
 
-from src.settings.general import DEVICE, data_paths
-from src.utils.utils import get_mean_shap_value_per_token, save_results
+from settings.general import DEVICE, data_paths
+from utils.utils import get_mean_shap_value_per_token, save_results
 
 
 class WikiTaxonomyClassifier(pl.LightningModule):

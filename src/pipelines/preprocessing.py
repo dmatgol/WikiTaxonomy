@@ -2,8 +2,8 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-from src.pipelines.base import Pipeline
-from src.settings.general import constants
+from pipelines.base import Pipeline
+from settings.general import constants
 
 
 class PreProcessing(Pipeline):
