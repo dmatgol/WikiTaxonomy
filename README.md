@@ -23,8 +23,8 @@ Please make sure you have `docker` and `docker-compose` installed.
 1. **Download the train, validation and test dataset**
 2. **Export them as environment variables**
 ```
-export TRAIN_DF_PATH=={PWD}/WikiTaxonomy/src/data/DBPEDIA_train.csv
-export VALID_DF_PATH=={PWD}/WikiTaxonomy/src/data/DBPEDIA_valid.csv
+export TRAIN_DF_PATH={PWD}/WikiTaxonomy/src/data/DBPEDIA_train.csv
+export VALID_DF_PATH={PWD}/WikiTaxonomy/src/data/DBPEDIA_valid.csv
 export TEST_DF_PATH={PWD}/WikiTaxonomy/src/data/DBPEDIA_test.csv
 ```
 3. **Run the application:**
