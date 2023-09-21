@@ -214,9 +214,9 @@ class WikiTaxonomyClassifier(pl.LightningModule):
         input_ids, attention_mask = encoding["input_ids"], encoding["attention_mask"]
 
         with torch.no_grad():
-            _, outputs = self.to("cpu")(input_ids, attention_mask)
+            _, predicted_probabilities = self.to("cpu")(input_ids, attention_mask)
 
-        predicted_class_index = torch.argmax(outputs, dim=1).item()
+        predicted_class_index = torch.argmax(predicted_probabilities, dim=1).item()
         predicted_class = class_label_to_index[predicted_class_index]
         return predicted_class_index, predicted_class
 
@@ -291,7 +291,6 @@ class WikiTaxonomyClassifier(pl.LightningModule):
         """Plot most important features for a given class label."""
         df = pd.DataFrame.from_dict(token_shap_value_dict, orient="index").reset_index()
         df.columns = ["word"] + list(df.columns[1:])
-        print(df.head())
         top_k_values = df[df[class_label] > 0].nlargest(10, class_label).index
 
         # PLOT
@@ -307,6 +306,5 @@ class WikiTaxonomyClassifier(pl.LightningModule):
         )
         plt.xlabel("Mean |shap|")
         plt.ylabel("Features")
-        plt.show()
 
         return plt
