@@ -1,10 +1,16 @@
-<div align="center"> </div>
-<video width="320" height="240" controls>
-  <source src="./src/static_images/streamlit_demo.mp4" type="video/mp4">
-</video>
-
 
 #  Wiki Taxonomy Classifier
+
+**Description**: This project comprises a streamlit application to see predictions on a cached
+testset or to use a BERT based model to predict on a new input sentence. The predict test set
+section of the application contains, model predictions on the testset, model interpretability and
+model evaluation. Please run the docker-compose command to explore the wiki taxonomy category dashboard. For more information, there
+is also a video in `src/static_files/streamlit_demo.webm`
+
+![img_1.png](src/static_images/dashboard2.png)
+![img.png](src/static_images/dashboard1.png)
+![img_2.png](src/static_images/dashboard3.png)
+![img.png](src/static_images/dashboard4.png)
 
 **Goal:** Predict the taxonomic category of wikipedia articles from their text. This project aims to
 predict the L1 classes. L1 classes are 9 category classes.
@@ -12,7 +18,28 @@ predict the L1 classes. L1 classes are 9 category classes.
 **Dataset used to train the model:** Open source dataset available on kaggle: https://www.kaggle.com/danofer/dbpedia-classes.
 
 
-# Instalation
+Please make sure you have `docker` and `docker-compose` installed.
+
+1. **Download the train, validation and test dataset**
+2. **Export them as environment variables**
+```
+export TRAIN_DF_PATH=={PWD}/WikiTaxonomy/src/data/DBPEDIA_train.csv
+export VALID_DF_PATH=={PWD}/WikiTaxonomy/src/data/DBPEDIA_valid.csv
+export TEST_DF_PATH={PWD}/WikiTaxonomy/src/data/DBPEDIA_test.csv
+```
+3. **Run the application:**
+```
+docker-compose -f docker-compose-app.yml pull
+docker-compose -f docker-compose-app.yml up
+```
+
+Notes:
+- Please give a bit of time for the application to start. The API needs to initialize first, hence
+you need to give it 1-2 minutes to start (if you see an error in the dashboard, don't worry,
+it means that the API has not yet fully started, just hang in there for a bit longer).
+Then, just go to `http://localhost:8501/` to see the dashboard. You can also see the fastapi swagger documentation if you go to `http://localhost:8001/docs`.
+- The Pytorch image in the Dockerfiles is quite big, so please run this application with a machine with at least 16GB RAM. If you experience any problem, please try to increase the RAM that docker is able to use.
+- The Docker images for the API and Streamlit (which include the trained model) are stored in Docker hub, hence the reason for the docker-compose pull. Please note that the image pull takes approximately 2 minutes.
 
 
 # Project development process

@@ -2,7 +2,7 @@ version: '3'
 
 services:
   fastapi:
-    image: fastapi-taxonomy-app-v0:latest
+    image: dmatigol/wiki-taxonomy-classifier:fastapi-taxonomy-app-v0
     ports:
       - 8001:8001
     environment:
@@ -19,7 +19,7 @@ services:
     container_name: wiki_taxonomy_classifier_api
 
   streamlit:
-    image: fastapi-taxonomy-app-v0:latest
+    image: dmatigol/wiki-taxonomy-classifier:fastapi-taxonomy-app-v0
     depends_on:
       - fastapi
     ports:
