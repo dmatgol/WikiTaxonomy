@@ -4,10 +4,10 @@ import torch
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from src.api.api_models import BertShapValuesResponse, BertTaxonomyResponse
-from src.api.preprocess import class_label_to_index
-from src.model.wiki_taxonomy_classifier import WikiTaxonomyClassifier
-from src.settings.general import DEVICE, data_paths
+from api.api_models import BertShapValuesResponse, BertTaxonomyResponse
+from api.preprocess import class_label_to_index
+from model.wiki_taxonomy_classifier import WikiTaxonomyClassifier
+from settings.general import DEVICE, data_paths
 
 router = APIRouter()
 

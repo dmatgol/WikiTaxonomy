@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  fastapi:
+    image: fastapi-taxonomy-app-v0:latest
+    ports:
+      - 8001:8001
+    environment:
+      TRAIN_DF_PATH: ${TRAIN_DF_PATH}
+      VALID_DF_PATH: ${VALID_DF_PATH}
+      TEST_DF_PATH: ${TEST_DF_PATH}
+    volumes:
+      - ${TRAIN_DF_PATH}:/wiki-taxonomy-classifier/src/data/DBPEDIA_train.csv
+      - ${VALID_DF_PATH}:/wiki-taxonomy-classifier/src/data/DBPEDIA_val.csv
+      - ${TEST_DF_PATH}:/wiki-taxonomy-classifier/src/data/DBPEDIA_test.csv
+    networks:
+      - deploy_network
+    command: python src/api_entrypoint_main.py --train_path "/wiki-taxonomy-classifier/src/data/DBPEDIA_train.csv" --valid_path "/wiki-taxonomy-classifier/src/data/DBPEDIA_val.csv" --test_path "/wiki-taxonomy-classifier/src/data/DBPEDIA_test.csv"
+    container_name: wiki_taxonomy_classifier_api
+
+  streamlit:
+    image: fastapi-taxonomy-app-v0:latest
+    depends_on:
+      - fastapi
+    ports:
+        - 8501:8501
+    networks:
+      - deploy_network
+    container_name: streamlit
+    command: streamlit run --server.port 8501 src/app_dashboard_entrypoint.py
+
+networks:
+  deploy_network:
+    driver: bridge
