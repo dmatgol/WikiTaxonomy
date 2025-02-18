@@ -9,6 +9,6 @@ nltk==3.8.1
 numpy==1.24.4
 torchmetrics==1.1.2
 pydantic==2.1.0
-streamlit==1.26.0
+streamlit==1.37.0
 fastapi==0.100.1
 shap==0.42.1
